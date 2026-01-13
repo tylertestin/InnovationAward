@@ -2,10 +2,13 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const devCerts = require("office-addin-dev-certs");
+require("dotenv").config();
 
 // Webpack supports exporting an async function (or a Promise) as config.
 module.exports = async (env, argv) => {
   const httpsOptions = await devCerts.getHttpsServerOptions();
+
+  const devServerPort = Number(process.env.PORT) || 3000;
 
   return {
     entry: {
@@ -55,7 +58,7 @@ module.exports = async (env, argv) => {
       static: {
         directory: path.join(__dirname, "dist"),
       },
-      port: 3000,
+      port: devServerPort,
       server: {
         type: "https",
         options: httpsOptions,
