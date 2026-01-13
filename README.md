@@ -21,12 +21,13 @@ This repo is a **consultant-grade stakeholder CRM** focused on day-to-day relati
 npm install
 cp .env.example .env
 # edit .env and set OPENAI_API_KEY
+# optional: adjust API_PORT (defaults to 3001) and WEB_PORT (defaults to 3000)
 npm run dev
 ```
 
 This starts:
-- Webpack dev server: `https://localhost:3000`
-- Local API server: `http://localhost:3001`
+- Webpack dev server: `https://localhost:3000` (or `WEB_PORT` if set)
+- Local API server: `http://localhost:3001` (or `API_PORT` if set)
 
 ## Export from Outlook (temporary ingestion path)
 
@@ -88,4 +89,3 @@ In PowerPoint:
 
 - The OpenAI API key is used **only on the local API server** via `.env`.
 - Outlook ingestion is via **user-exported CSV** only (no Graph access, no OAuth client registration required).
-

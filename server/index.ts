@@ -79,5 +79,5 @@ Use concise rationales (<= 20 words).`,
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-const port = Number(process.env.PORT || 3001);
+const port = Number(process.env.API_PORT || 3001);
 app.listen(port, () => console.log(`API listening on http://localhost:${port}`));
