@@ -1,0 +1,108 @@
+:root {
+  font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  padding: 12px 12px 8px 12px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.header h1 {
+  font-size: 16px;
+  margin: 0 0 6px 0;
+}
+
+.small {
+  color: #666;
+  font-size: 12px;
+}
+
+.container {
+  padding: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+button {
+  padding: 8px 10px;
+  border: 1px solid #c8c8c8;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.primary {
+  border-color: #1a7f37;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.card h2 {
+  font-size: 13px;
+  margin: 0 0 6px 0;
+}
+
+.list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 10px 0;
+}
+
+
+/* Added for PowerPoint impact view */
+.monoBox{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  background: #f6f6f6;
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 180px;
+  overflow: auto;
+}
+.impactRow{ display:flex; gap:8px; align-items:center; padding:6px 0; }
+.impactName{ font-weight:600; }
+.pillRed{ background:#ffd6d6; border:1px solid #ff9a9a; }
+.pillGreen{ background:#d6ffe3; border:1px solid #7fe2a0; }
+.error{ background:#ffecec; border:1px solid #ffb5b5; padding:8px; border-radius:8px; margin-top:8px; }
+.row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
