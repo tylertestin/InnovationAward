@@ -301,7 +301,8 @@ function App() {
           <button
             className="btn"
             onClick={() => {
-              const blob = exportState(state);
+              const json = exportState();
+              const blob = new Blob([json], { type: "application/json" });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
