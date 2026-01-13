@@ -8,7 +8,7 @@ require("dotenv").config();
 module.exports = async (env, argv) => {
   const httpsOptions = await devCerts.getHttpsServerOptions();
 
-  const devServerPort = Number(process.env.PORT) || 3000;
+  const devServerPort = Number(process.env.WEB_PORT) || 3000;
 
   return {
     entry: {
