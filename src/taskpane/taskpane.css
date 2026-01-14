@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -80,6 +80,7 @@ body {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.2px;
+  font-family: "Cinzel Decorative", "Inter", "Segoe UI", system-ui, sans-serif;
   color: #0f1f1e;
 }
 
