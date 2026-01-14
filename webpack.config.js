@@ -6,6 +6,10 @@ require("dotenv").config();
 
 // Webpack supports exporting an async function (or a Promise) as config.
 module.exports = async (env, argv) => {
+  if (argv.mode !== "production") {
+    // Silence Node deprecation warnings from dev-server dependencies (e.g., util._extend).
+    process.noDeprecation = true;
+  }
   const httpsOptions = await devCerts.getHttpsServerOptions();
 
   const devServerPort = Number(process.env.WEB_PORT) || 3000;
