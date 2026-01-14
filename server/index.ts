@@ -78,9 +78,8 @@ Use concise rationales (<= 20 words).`,
     };
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL || "gpt-5-mini",
       messages: [prompt],
-      temperature: 0.2,
       response_format: { type: "json_object" },
     });
 
@@ -142,9 +141,8 @@ Tone: crisp, consultative, action-oriented. Keep to 120 words or fewer.`,
     };
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL || "gpt-5-mini",
       messages: [prompt],
-      temperature: 0.3,
       response_format: { type: "json_object" },
     });
 
@@ -205,9 +203,8 @@ Write 3-5 bullets, each <= 18 words.`,
     };
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      model: process.env.OPENAI_MODEL || "gpt-5-mini",
       messages: [prompt],
-      temperature: 0.2,
       response_format: { type: "json_object" },
     });
 
