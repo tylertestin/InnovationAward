@@ -774,5 +774,27 @@ function AddNote({ onAdd }: { onAdd: (text: string) => void }) {
   );
 }
 
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+async function bootstrap() {
+  const rootElement = document.getElementById("root");
+  if (!rootElement) return;
+
+  if (globalThis.Office?.onReady) {
+    await globalThis.Office.onReady();
+  }
+
+  const root = createRoot(rootElement);
+  root.render(<App />);
+}
+
+async function start() {
+  try {
+    await bootstrap();
+  } catch (error) {
+    const rootElement = document.getElementById("root");
+    if (rootElement) {
+      rootElement.textContent = "Office host not ready";
+    }
+  }
+}
+
+void start();
