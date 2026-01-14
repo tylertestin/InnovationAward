@@ -19,10 +19,43 @@ body {
 }
 
 .container {
+  --accent: #007a78;
+  --accent-dark: #016863;
+  --accent-soft: rgba(0, 122, 120, 0.12);
+  --accent-border: #007a78;
+  --header-bg: linear-gradient(135deg, #ffffff 0%, #f0f6f6 100%);
+  --surface-tint: #f8fbfb;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.host-web {
+  --accent: #2463eb;
+  --accent-dark: #1f4fd1;
+  --accent-soft: rgba(36, 99, 235, 0.12);
+  --accent-border: #2463eb;
+  --header-bg: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
+  background: #f2f6ff;
+}
+
+.host-onenote {
+  --accent: #7a3bd6;
+  --accent-dark: #5f2fb5;
+  --accent-soft: rgba(122, 59, 214, 0.12);
+  --accent-border: #7a3bd6;
+  --header-bg: linear-gradient(135deg, #ffffff 0%, #f5efff 100%);
+  background: #f7f3ff;
+}
+
+.host-powerpoint {
+  --accent: #d1462f;
+  --accent-dark: #b83b27;
+  --accent-soft: rgba(209, 70, 47, 0.12);
+  --accent-border: #d1462f;
+  --header-bg: linear-gradient(135deg, #ffffff 0%, #fff0ed 100%);
+  background: #fff5f2;
 }
 
 .header {
@@ -32,7 +65,7 @@ body {
   gap: 12px;
   padding: 18px 20px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f6f6 100%);
+  background: var(--header-bg);
   border: 1px solid #dbe3e6;
   box-shadow: 0 12px 24px rgba(16, 35, 33, 0.08);
 }
@@ -68,8 +101,8 @@ body {
 }
 
 .pillNeutral {
-  background: rgba(0, 122, 120, 0.1);
-  color: #007a78;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .headerActions {
@@ -90,26 +123,26 @@ body {
 }
 
 .btn:hover {
-  border-color: #007a78;
-  color: #007a78;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .btnPrimary {
-  background: #007a78;
+  background: var(--accent);
   color: #ffffff;
-  border-color: #007a78;
+  border-color: var(--accent);
 }
 
 .btnPrimary:hover {
-  background: #016863;
-  border-color: #016863;
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
   color: #ffffff;
 }
 
 .btnSecondary {
   background: #eef5f5;
   border-color: transparent;
-  color: #007a78;
+  color: var(--accent);
 }
 
 .btnGhost {
@@ -195,7 +228,7 @@ button:disabled {
 .drawer summary::after {
   content: "▾";
   float: right;
-  color: #007a78;
+  color: var(--accent);
 }
 
 .drawer[open] summary::after {
@@ -297,7 +330,7 @@ button:disabled {
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid transparent;
-  background: #f8fbfb;
+  background: var(--surface-tint);
   text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -309,9 +342,9 @@ button:disabled {
 }
 
 .listItem.selected {
-  border-color: #007a78;
-  background: #ecf7f6;
-  box-shadow: 0 6px 12px rgba(0, 122, 120, 0.15);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
 }
 
 .listItemTitle {
@@ -343,7 +376,7 @@ button:disabled {
 .detailsBlock {
   padding: 12px;
   border-radius: 12px;
-  background: #f6faf9;
+  background: #f7fafc;
   border: 1px solid #dfe9ea;
 }
 
@@ -387,7 +420,7 @@ button:disabled {
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid #e1e8ea;
-  background: #f8fbfb;
+  background: var(--surface-tint);
 }
 
 .interactionTop {
@@ -410,12 +443,23 @@ button:disabled {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
   white-space: pre-wrap;
-  background: #f0f6f6;
+  background: var(--surface-tint);
   padding: 10px;
   border-radius: 10px;
   max-height: 180px;
   overflow: auto;
   border: 1px dashed #cfe2e0;
+}
+
+.monoBoxTight {
+  margin-top: 10px;
+  max-height: 200px;
+}
+
+.impactList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .impactRow {
@@ -436,9 +480,9 @@ button:disabled {
 }
 
 .pillGreen {
-  background: rgba(0, 122, 120, 0.12);
-  border: 1px solid rgba(0, 122, 120, 0.35);
-  color: #007a78;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  color: var(--accent);
 }
 
 .error {
@@ -447,6 +491,11 @@ button:disabled {
   padding: 8px 10px;
   border-radius: 10px;
   color: #a43434;
+}
+
+.bullets {
+  margin: 10px 0 0 18px;
+  padding: 0;
 }
 
 .footer {

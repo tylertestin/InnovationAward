@@ -77,6 +77,115 @@ Use concise rationales (<= 20 words).`,
   }
 });
 
+/**
+ * POST /api/openai/generate-comms
+ * Body: {
+ *   stakeholder: {id, displayName, email?, notes?: any, tags?: string[]},
+ *   signals?: Array<{ title, summary, at, type }>,
+ *   slideText?: string,
+ * }
+ *
+ * Returns: { draft: string }
+ */
+app.post("/api/openai/generate-comms", async (req, res) => {
+  try {
+    if (!openaiKey) return res.status(500).json({ error: "OPENAI_API_KEY missing on server" });
+
+    const { stakeholder, signals, slideText } = req.body ?? {};
+    if (!stakeholder) return res.status(400).json({ error: "stakeholder is required" });
+
+    const prompt = {
+      role: "user" as const,
+      content: [
+        {
+          type: "text" as const,
+          text:
+`You are a client communications strategist.
+Draft a concise response tailored to the stakeholder, using their profile, notes, and recent signals.
+Return STRICT JSON: { "draft": "..." }.
+Tone: crisp, consultative, action-oriented. Keep to 120 words or fewer.`,
+        },
+        { type: "text" as const, text: `STAKEHOLDER:\n${JSON.stringify(stakeholder).slice(0, 6000)}` },
+        { type: "text" as const, text: `RECENT_SIGNALS:\n${JSON.stringify(signals ?? []).slice(0, 8000)}` },
+        { type: "text" as const, text: `SLIDE_CONTEXT:\n${String(slideText ?? "").slice(0, 4000)}` },
+      ],
+    };
+
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      messages: [prompt],
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+    });
+
+    const txt = completion.choices?.[0]?.message?.content ?? "{}";
+    let parsed: any;
+    try {
+      parsed = JSON.parse(txt);
+    } catch {
+      return res.status(200).json({ draft: "" });
+    }
+    return res.status(200).json(parsed);
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: e?.message || "server error" });
+  }
+});
+
+/**
+ * POST /api/openai/onenote-synthesis
+ * Body: {
+ *   stakeholder: {id, displayName, email?, notes?: any, tags?: string[]},
+ *   pageTitle?: string,
+ *   pageText?: string,
+ * }
+ *
+ * Returns: { bullets: string[] }
+ */
+app.post("/api/openai/onenote-synthesis", async (req, res) => {
+  try {
+    if (!openaiKey) return res.status(500).json({ error: "OPENAI_API_KEY missing on server" });
+
+    const { stakeholder, pageTitle, pageText } = req.body ?? {};
+    if (!stakeholder) return res.status(400).json({ error: "stakeholder is required" });
+
+    const prompt = {
+      role: "user" as const,
+      content: [
+        {
+          type: "text" as const,
+          text:
+`You are summarizing meeting notes into client-ready bullets for a specific stakeholder.
+Return STRICT JSON: { "bullets": ["...", "...", "..."] }.
+Write 3-5 bullets, each <= 18 words.`,
+        },
+        { type: "text" as const, text: `STAKEHOLDER:\n${JSON.stringify(stakeholder).slice(0, 6000)}` },
+        { type: "text" as const, text: `ONENOTE_PAGE_TITLE:\n${String(pageTitle ?? "").slice(0, 4000)}` },
+        { type: "text" as const, text: `ONENOTE_PAGE_TEXT:\n${String(pageText ?? "").slice(0, 9000)}` },
+      ],
+    };
+
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      messages: [prompt],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+    });
+
+    const txt = completion.choices?.[0]?.message?.content ?? "{}";
+    let parsed: any;
+    try {
+      parsed = JSON.parse(txt);
+    } catch {
+      return res.status(200).json({ bullets: [] });
+    }
+    return res.status(200).json(parsed);
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: e?.message || "server error" });
+  }
+});
+
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 const port = Number(process.env.API_PORT || 3001);
