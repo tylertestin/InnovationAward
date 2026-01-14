@@ -31,7 +31,12 @@ const openai = new OpenAI({ apiKey: openaiKey });
  */
 app.post("/api/openai/stakeholder-impact", async (req, res) => {
   try {
-    if (!openaiKey) return res.status(500).json({ error: "OPENAI_API_KEY missing on server" });
+    if (!openaiKey) {
+      return res.status(500).json({
+        error: "OPENAI_API_KEY missing on server",
+        hint: "Set OPENAI_API_KEY in the server environment or .env file and restart the API.",
+      });
+    }
 
     const { stakeholders, slideText, emails } = req.body ?? {};
     if (!Array.isArray(stakeholders)) return res.status(400).json({ error: "stakeholders must be an array" });
@@ -73,7 +78,11 @@ Use concise rationales (<= 20 words).`,
     return res.status(200).json(parsed);
   } catch (e: any) {
     console.error(e);
-    return res.status(500).json({ error: e?.message || "server error" });
+    return res.status(500).json({
+      error: e?.message || "server error",
+      type: e?.name,
+      details: e?.response?.data ?? e?.cause ?? null,
+    });
   }
 });
 
@@ -89,7 +98,12 @@ Use concise rationales (<= 20 words).`,
  */
 app.post("/api/openai/generate-comms", async (req, res) => {
   try {
-    if (!openaiKey) return res.status(500).json({ error: "OPENAI_API_KEY missing on server" });
+    if (!openaiKey) {
+      return res.status(500).json({
+        error: "OPENAI_API_KEY missing on server",
+        hint: "Set OPENAI_API_KEY in the server environment or .env file and restart the API.",
+      });
+    }
 
     const { stakeholder, signals, slideText } = req.body ?? {};
     if (!stakeholder) return res.status(400).json({ error: "stakeholder is required" });
@@ -128,7 +142,11 @@ Tone: crisp, consultative, action-oriented. Keep to 120 words or fewer.`,
     return res.status(200).json(parsed);
   } catch (e: any) {
     console.error(e);
-    return res.status(500).json({ error: e?.message || "server error" });
+    return res.status(500).json({
+      error: e?.message || "server error",
+      type: e?.name,
+      details: e?.response?.data ?? e?.cause ?? null,
+    });
   }
 });
 
@@ -144,7 +162,12 @@ Tone: crisp, consultative, action-oriented. Keep to 120 words or fewer.`,
  */
 app.post("/api/openai/onenote-synthesis", async (req, res) => {
   try {
-    if (!openaiKey) return res.status(500).json({ error: "OPENAI_API_KEY missing on server" });
+    if (!openaiKey) {
+      return res.status(500).json({
+        error: "OPENAI_API_KEY missing on server",
+        hint: "Set OPENAI_API_KEY in the server environment or .env file and restart the API.",
+      });
+    }
 
     const { stakeholder, pageTitle, pageText } = req.body ?? {};
     if (!stakeholder) return res.status(400).json({ error: "stakeholder is required" });
@@ -182,7 +205,11 @@ Write 3-5 bullets, each <= 18 words.`,
     return res.status(200).json(parsed);
   } catch (e: any) {
     console.error(e);
-    return res.status(500).json({ error: e?.message || "server error" });
+    return res.status(500).json({
+      error: e?.message || "server error",
+      type: e?.name,
+      details: e?.response?.data ?? e?.cause ?? null,
+    });
   }
 });
 

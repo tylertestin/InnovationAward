@@ -350,7 +350,8 @@ function App() {
     try {
       setCommsLoading(true);
       setCommsError(null);
-      const res = await fetch(`${API_BASE_URL}/api/openai/generate-comms`, {
+      const endpoint = `${API_BASE_URL}/api/openai/generate-comms`;
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -359,7 +360,11 @@ function App() {
           slideText,
         }),
       });
-      if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text().catch(() => "")}`);
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        const detail = text ? ` Response: ${text}` : " Response body was empty.";
+        throw new Error(`API error ${res.status}${res.statusText ? ` ${res.statusText}` : ""}.${detail} URL: ${endpoint}`);
+      }
       const data = (await res.json()) as { draft?: string };
       setCommsDraft(data.draft ?? "");
     } catch (e: any) {
