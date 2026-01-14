@@ -81,6 +81,19 @@ function App() {
   const [slideText, setSlideText] = React.useState<string>("");
   const [impacts, setImpacts] = React.useState<ImpactRow[]>([]);
   const [pptError, setPptError] = React.useState<string | null>(null);
+  const [pptReviewLoading, setPptReviewLoading] = React.useState(false);
+
+  // Web (browser) comms generation
+  const [commsDraft, setCommsDraft] = React.useState<string>("");
+  const [commsError, setCommsError] = React.useState<string | null>(null);
+  const [commsLoading, setCommsLoading] = React.useState(false);
+
+  // OneNote synthesis
+  const [oneNoteSample, setOneNoteSample] = React.useState<string>("");
+  const [oneNoteTitle, setOneNoteTitle] = React.useState<string>("");
+  const [oneNoteBullets, setOneNoteBullets] = React.useState<string[]>([]);
+  const [oneNoteError, setOneNoteError] = React.useState<string | null>(null);
+  const [oneNoteLoading, setOneNoteLoading] = React.useState(false);
 
   const stakeholdersSorted = React.useMemo(() => {
     const filtered = state.stakeholders.filter((stakeholder) => {
@@ -98,6 +111,13 @@ function App() {
     saveState(state);
   }, [state]);
 
+  React.useEffect(() => {
+    setCommsDraft("");
+    setCommsError(null);
+    setOneNoteBullets([]);
+    setOneNoteError(null);
+  }, [selectedStakeholderId]);
+
   const selected = React.useMemo(
     () => state.stakeholders.find((s) => s.id === selectedStakeholderId) ?? null,
     [state, selectedStakeholderId]
@@ -105,6 +125,8 @@ function App() {
 
   async function captureFromOneNote() {
     const capture = await captureFromOneNotePage();
+    setOneNoteSample(capture.extractedTextSample || "");
+    setOneNoteTitle(capture.title || "OneNote page");
 
     let working = state;
 
@@ -259,6 +281,7 @@ function App() {
 
   async function runImpactAnalysisAndRender() {
     try {
+      setPptReviewLoading(true);
       setPptError(null);
       if (!slideText.trim()) throw new Error("No slide text captured yet. Click 'Read current slide' first.");
 
@@ -285,6 +308,8 @@ function App() {
       setImpacts(rows);
     } catch (e: any) {
       setPptError(String(e?.message || e));
+    } finally {
+      setPptReviewLoading(false);
     }
   }
 
@@ -312,8 +337,65 @@ function App() {
     return [...state.interactions].sort((a, b) => b.at.localeCompare(a.at))[0];
   }, [state.interactions]);
 
+  const stakeholderSignals = React.useMemo(() => {
+    if (!selected) return [];
+    return state.interactions
+      .filter((i) => i.participantIds?.includes(selected.id))
+      .slice(0, 6)
+      .map((i) => ({ title: i.title, summary: i.summary, at: i.at, type: i.type }));
+  }, [state.interactions, selected]);
+
+  async function generateCommsDraft() {
+    if (!selected) return;
+    try {
+      setCommsLoading(true);
+      setCommsError(null);
+      const res = await fetch(`${API_BASE_URL}/api/openai/generate-comms`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stakeholder: selected,
+          signals: stakeholderSignals,
+          slideText,
+        }),
+      });
+      if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text().catch(() => "")}`);
+      const data = (await res.json()) as { draft?: string };
+      setCommsDraft(data.draft ?? "");
+    } catch (e: any) {
+      setCommsError(String(e?.message || e));
+    } finally {
+      setCommsLoading(false);
+    }
+  }
+
+  async function synthesizeOneNoteBullets() {
+    if (!selected) return;
+    try {
+      setOneNoteLoading(true);
+      setOneNoteError(null);
+      if (!oneNoteSample.trim()) throw new Error("Capture the OneNote page first to read current notes.");
+      const res = await fetch(`${API_BASE_URL}/api/openai/onenote-synthesis`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stakeholder: selected,
+          pageTitle: oneNoteTitle,
+          pageText: oneNoteSample,
+        }),
+      });
+      if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text().catch(() => "")}`);
+      const data = (await res.json()) as { bullets?: string[] };
+      setOneNoteBullets(Array.isArray(data.bullets) ? data.bullets : []);
+    } catch (e: any) {
+      setOneNoteError(String(e?.message || e));
+    } finally {
+      setOneNoteLoading(false);
+    }
+  }
+
   return (
-    <div className="container">
+    <div className={`container host-${host.toLowerCase()}`}>
       <header className="header">
         <div className="brand">
           <div className="brandTitle">SignalBridge</div>
@@ -438,14 +520,14 @@ function App() {
 
           {host === "PowerPoint" && (
             <details className="drawer">
-              <summary>PowerPoint insights</summary>
+              <summary>Slide review (PowerPoint)</summary>
               <div className="drawerBody">
                 <div className="row">
                   <button className="btnPrimary" onClick={captureFromPowerPoint}>
                     Read current slide
                   </button>
-                  <button className="btn" onClick={runImpactAnalysisAndRender}>
-                    Analyze stakeholder impact
+                  <button className="btn" onClick={runImpactAnalysisAndRender} disabled={pptReviewLoading}>
+                    {pptReviewLoading ? "Reviewing..." : "Run slide review"}
                   </button>
                 </div>
                 {pptError && <div className="error">PowerPoint error: {pptError}</div>}
@@ -462,21 +544,6 @@ function App() {
             {slideText.slice(0, 1200)}
             {slideText.length > 1200 ? "…" : ""}
           </div>
-
-          {impacts.length > 0 && (
-            <div className="panel">
-              <div className="panelTitle">Stakeholders impacted</div>
-              {impacts.map((r) => (
-                <div key={r.stakeholderId} className="impactRow">
-                  <span className={r.reaction === "red" ? "pill pillRed" : "pill pillGreen"}>
-                    {r.reaction.toUpperCase()}
-                  </span>
-                  <span className="impactName">{r.displayName}</span>
-                  <span className="muted">{r.rationale ?? ""}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
       )}
 
@@ -520,12 +587,67 @@ function App() {
 
         <section className="right">
           <div className="sectionTitle">Engagement workspace</div>
+          {host === "PowerPoint" && (
+            <div className="detailsBlock">
+              <div className="detailsLabel">Slide review: expected feedback</div>
+              {impacts.length > 0 ? (
+                <div className="impactList">
+                  {impacts.map((r) => (
+                    <div key={r.stakeholderId} className="impactRow">
+                      <span className={r.reaction === "red" ? "pill pillRed" : "pill pillGreen"}>
+                        {r.reaction.toUpperCase()}
+                      </span>
+                      <span className="impactName">{r.displayName}</span>
+                      <span className="muted">{r.rationale ?? "Review pending"}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="muted">Run “Slide review” to see predicted stakeholder responses.</div>
+              )}
+            </div>
+          )}
+
           {selected ? (
             <div className="details">
               <div className="detailsHeader">
                 <div className="detailsName">{selected.displayName}</div>
                 <div className="muted">{selected.email ?? ""}</div>
               </div>
+
+              {host === "Web" && (
+                <div className="detailsBlock">
+                  <div className="detailsLabel">Generate comms (browser)</div>
+                  <p className="muted">
+                    Draft a tailored response using stakeholder profile, notes, and recent interactions.
+                  </p>
+                  <button className="btnPrimary" onClick={generateCommsDraft} disabled={commsLoading}>
+                    {commsLoading ? "Generating..." : "Generate comms"}
+                  </button>
+                  {commsError && <div className="error">Comms: {commsError}</div>}
+                  {commsDraft && <div className="monoBox monoBoxTight">{commsDraft}</div>}
+                </div>
+              )}
+
+              {host === "OneNote" && (
+                <div className="detailsBlock">
+                  <div className="detailsLabel">Synthesize / populate (OneNote)</div>
+                  <p className="muted">
+                    Turn current OneNote page notes into stakeholder-ready bullet points for the client.
+                  </p>
+                  <button className="btnPrimary" onClick={synthesizeOneNoteBullets} disabled={oneNoteLoading}>
+                    {oneNoteLoading ? "Synthesizing..." : "Synthesize bullets"}
+                  </button>
+                  {oneNoteError && <div className="error">OneNote: {oneNoteError}</div>}
+                  {oneNoteBullets.length > 0 && (
+                    <ul className="bullets">
+                      {oneNoteBullets.map((b, idx) => (
+                        <li key={idx}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               <div className="detailsBlock">
                 <div className="detailsLabel">Notes</div>
