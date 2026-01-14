@@ -363,32 +363,21 @@ function App() {
   }
 
   function resetWorkspace() {
-    try {
-      const confirmReset = globalThis.confirm
-        ? globalThis.confirm(
-            "This will remove all notes, stakeholders, and imported Outlook data from this web app. Continue?"
-          )
-        : true;
-      if (!confirmReset) return;
-      const cleared = resetState();
-      setState(cleared);
-      setSelectedStakeholderId(null);
-      setInbox([]);
-      setEvents([]);
-      setOutlookError(null);
-      setCommsDraft("");
-      setCommsError(null);
-      setImpacts([]);
-      setPptError(null);
-      setSlideText("");
-      setOneNoteSample("");
-      setOneNoteTitle("");
-      setOneNoteBullets([]);
-      setOneNoteError(null);
-    } catch (error: any) {
-      console.error("Reset failed", error);
-      alert(`Reset failed: ${String(error?.message || error)}`);
-    }
+    const confirmed = window.confirm(
+      "This will remove all notes, stakeholders, and imported Outlook data from this web app. Continue?"
+    );
+    if (!confirmed) return;
+    const cleared = resetState();
+    setState(cleared);
+    setSelectedStakeholderId(null);
+    setInbox([]);
+    setEvents([]);
+    setOutlookError(null);
+    setCommsDraft("");
+    setCommsError(null);
+    setImpacts([]);
+    setPptError(null);
+    setSlideText("");
   }
 
   const hostLabel =
