@@ -12,6 +12,7 @@ import {
   importState,
   loadState,
   loadStateFromServer,
+  resetState,
   saveState,
   upsertStakeholderByEmail,
 } from "../shared/storage";
@@ -361,6 +362,24 @@ function App() {
     }
   }
 
+  function resetWorkspace() {
+    const confirmed = window.confirm(
+      "This will remove all notes, stakeholders, and imported Outlook data from this web app. Continue?"
+    );
+    if (!confirmed) return;
+    const cleared = resetState();
+    setState(cleared);
+    setSelectedStakeholderId(null);
+    setInbox([]);
+    setEvents([]);
+    setOutlookError(null);
+    setCommsDraft("");
+    setCommsError(null);
+    setImpacts([]);
+    setPptError(null);
+    setSlideText("");
+  }
+
   const hostLabel =
     host === "Web" ? "Web app" : host === "OneNote" ? "OneNote" : host === "PowerPoint" ? "PowerPoint" : host;
   const lastInteraction = React.useMemo(() => {
@@ -490,6 +509,9 @@ function App() {
                 }}
               />
             </label>
+            <button className="btn btnDanger" onClick={resetWorkspace}>
+              Reset data
+            </button>
           </div>
         )}
       </header>
