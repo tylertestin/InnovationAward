@@ -13,7 +13,9 @@ export async function captureFromOneNotePage(): Promise<{
       throw new Error("OneNote API is not available. Try reloading the add-in while OneNote is open.");
     }
     const result = await OneNote.run(async (context) => {
-      const page = context.application.getActivePageOrNull();
+      const app: any = context.application;
+      const page =
+        typeof app.getActivePageOrNullObject === "function" ? app.getActivePageOrNullObject() : app.getActivePage();
       page.load("id,title");
 
       // Load page contents (best effort).
@@ -22,7 +24,7 @@ export async function captureFromOneNotePage(): Promise<{
 
       await context.sync();
 
-      if ((page as any).isNull) {
+      if ((page as any).isNullObject || (page as any).isNull) {
         return {
           pageId: undefined,
           title: "No active page",

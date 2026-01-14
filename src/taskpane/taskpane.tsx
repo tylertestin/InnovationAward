@@ -436,7 +436,13 @@ function App() {
       });
       if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text().catch(() => "")}`);
       const data = (await res.json()) as { bullets?: string[] };
-      setOneNoteBullets(Array.isArray(data.bullets) ? data.bullets : []);
+      const bullets = Array.isArray(data.bullets) ? data.bullets : [];
+      setOneNoteBullets(bullets);
+      if (bullets.length > 0) {
+        const formatted = bullets.map((b) => `• ${b}`).join("\n");
+        const noteText = `${pageTitle || "OneNote page"}\n${formatted}`;
+        setState((prev) => addNote(prev, selected.id, noteText));
+      }
     } catch (e: any) {
       setOneNoteError(String(e?.message || e));
     } finally {
