@@ -458,61 +458,65 @@ function App() {
           <div className="brandSubtitle">Stakeholder Intelligence Studio</div>
           <div className="pill pillNeutral">Running in {hostLabel}</div>
         </div>
-        <div className="headerActions">
-          <button
-            className="btn btnGhost"
-            onClick={() => {
-              const json = exportState();
-              const blob = new Blob([json], { type: "application/json" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "caseforce.json";
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Export
-          </button>
-
-          <label className="btn btnSecondary">
-            Import
-            <input
-              type="file"
-              accept="application/json"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleImportJsonFile(f);
-                // reset so selecting the same file twice triggers onChange
-                e.currentTarget.value = "";
+        {host === "Web" && (
+          <div className="headerActions">
+            <button
+              className="btn btnGhost"
+              onClick={() => {
+                const json = exportState();
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "caseforce.json";
+                a.click();
+                URL.revokeObjectURL(url);
               }}
-            />
-          </label>
-        </div>
+            >
+              Export
+            </button>
+
+            <label className="btn btnSecondary">
+              Import
+              <input
+                type="file"
+                accept="application/json"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleImportJsonFile(f);
+                  // reset so selecting the same file twice triggers onChange
+                  e.currentTarget.value = "";
+                }}
+              />
+            </label>
+          </div>
+        )}
       </header>
 
-      <section className="summaryGrid">
-        <div className="summaryCard">
-          <div className="summaryLabel">Active stakeholders</div>
-          <div className="summaryValue">{state.stakeholders.length}</div>
-          <div className="summaryMeta">Sorted by {sortBy === "recent" ? "latest touch" : "name"}</div>
-        </div>
-        <div className="summaryCard">
-          <div className="summaryLabel">Interactions tracked</div>
-          <div className="summaryValue">{state.interactions.length}</div>
-          <div className="summaryMeta">
-            Last update: {lastInteraction ? lastInteraction.at.slice(0, 10) : "—"}
+      {host === "Web" && (
+        <section className="summaryGrid">
+          <div className="summaryCard">
+            <div className="summaryLabel">Active stakeholders</div>
+            <div className="summaryValue">{state.stakeholders.length}</div>
+            <div className="summaryMeta">Sorted by {sortBy === "recent" ? "latest touch" : "name"}</div>
           </div>
-        </div>
-        <div className="summaryCard">
-          <div className="summaryLabel">Outlook signals</div>
-          <div className="summaryValue">{inbox.length + events.length}</div>
-          <div className="summaryMeta">
-            {inbox.length} emails · {events.length} events
+          <div className="summaryCard">
+            <div className="summaryLabel">Interactions tracked</div>
+            <div className="summaryValue">{state.interactions.length}</div>
+            <div className="summaryMeta">
+              Last update: {lastInteraction ? lastInteraction.at.slice(0, 10) : "—"}
+            </div>
           </div>
-        </div>
-      </section>
+          <div className="summaryCard">
+            <div className="summaryLabel">Outlook signals</div>
+            <div className="summaryValue">{inbox.length + events.length}</div>
+            <div className="summaryMeta">
+              {inbox.length} emails · {events.length} events
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="controls">
         <div className="controlsIntro">
