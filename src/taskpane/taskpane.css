@@ -150,6 +150,17 @@ body {
   background: transparent;
 }
 
+.btnDanger {
+  background: #fce8e6;
+  border-color: transparent;
+  color: #b3261e;
+}
+
+.btnDanger:hover {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
