@@ -518,6 +518,68 @@ function App() {
         </section>
       )}
 
+      <section className="controls">
+        <div className="controlsIntro">
+          <div className="sectionTitle">Command center</div>
+          <p className="muted">
+            Capture stakeholder signals and import data in focused drawers to keep the workspace tidy.
+          </p>
+        </div>
+
+        <div className="drawerStack">
+          <details className="drawer" open>
+            <summary>Capture &amp; import</summary>
+            <div className="drawerBody">
+              {host === "OneNote" && (
+                <button className="btnPrimary" onClick={captureFromOneNote}>
+                  Capture from OneNote page
+                </button>
+              )}
+
+              {(host === "Web" || host === "PowerPoint" || host === "OneNote") && (
+                <div className="row">
+                  <label className="btn">
+                    Import Inbox CSV
+                    <input
+                      type="file"
+                      accept=".csv,text/csv"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) importOutlookEmailExport(f);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+
+                  <label className="btn">
+                    Import Calendar CSV
+                    <input
+                      type="file"
+                      accept=".csv,text/csv"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) importOutlookCalendarExport(f);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+
+                  {(inbox.length > 0 || events.length > 0) && (
+                    <span className="muted">
+                      {inbox.length} emails, {events.length} events loaded
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {outlookError && <div className="error">Outlook import: {outlookError}</div>}
+            </div>
+          </div>
+        </section>
+      )}
+
       {host === "Web" && (
         <section className="controls">
           <div className="controlsIntro">
