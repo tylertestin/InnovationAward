@@ -90,6 +90,12 @@ export function importState(jsonText: string): AppState {
   return normalized;
 }
 
+export function resetState(): AppState {
+  const cleared: AppState = { stakeholders: [], interactions: [] };
+  saveState(cleared);
+  return cleared;
+}
+
 export function upsertStakeholderByEmail(
   state: AppState,
   email: string | undefined,
