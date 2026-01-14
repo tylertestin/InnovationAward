@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { AppState, Interaction, Stakeholder } from "./models";
 
 const STORAGE_KEY = "stakeholderCrm.v1.state";
+let memoryState: AppState | null = null;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -10,19 +11,28 @@ function nowIso(): string {
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { stakeholders: [], interactions: [] };
-    const parsed = JSON.parse(raw) as AppState;
-    return {
-      stakeholders: parsed.stakeholders ?? [],
-      interactions: parsed.interactions ?? [],
-    };
+    if (raw) {
+      const parsed = JSON.parse(raw) as AppState;
+      const normalized = {
+        stakeholders: parsed.stakeholders ?? [],
+        interactions: parsed.interactions ?? [],
+      };
+      memoryState = normalized;
+      return normalized;
+    }
   } catch {
-    return { stakeholders: [], interactions: [] };
+    // ignore storage errors (e.g., blocked in Office webviews)
   }
+  return memoryState ?? { stakeholders: [], interactions: [] };
 }
 
 export function saveState(state: AppState): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  memoryState = state;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore storage errors (e.g., blocked in Office webviews)
+  }
 }
 
 export function exportState(): string {
