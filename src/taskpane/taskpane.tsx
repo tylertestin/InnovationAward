@@ -86,6 +86,7 @@ function App() {
   const [impacts, setImpacts] = React.useState<ImpactRow[]>([]);
   const [pptError, setPptError] = React.useState<string | null>(null);
   const [pptReviewLoading, setPptReviewLoading] = React.useState(false);
+  const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
   // Web (browser) comms generation
   const [commsDraft, setCommsDraft] = React.useState<string>("");
@@ -363,10 +364,10 @@ function App() {
   }
 
   function resetWorkspace() {
-    const confirmed = window.confirm(
-      "This will remove all notes, stakeholders, and imported Outlook data from this web app. Continue?"
-    );
-    if (!confirmed) return;
+    setShowResetConfirm(true);
+  }
+
+  function confirmResetWorkspace() {
     const cleared = resetState();
     setState(cleared);
     setSelectedStakeholderId(null);
@@ -378,6 +379,7 @@ function App() {
     setImpacts([]);
     setPptError(null);
     setSlideText("");
+    setShowResetConfirm(false);
   }
 
   const hostLabel =
@@ -538,6 +540,27 @@ function App() {
             </div>
           </div>
         </section>
+      )}
+
+      {showResetConfirm && (
+        <div className="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="reset-confirm-title">
+          <div className="modal">
+            <div className="modalTitle" id="reset-confirm-title">
+              Reset workspace data?
+            </div>
+            <p className="muted">
+              This will remove all notes, stakeholders, and imported Outlook data from this web app.
+            </p>
+            <div className="row modalActions">
+              <button className="btn btnGhost" onClick={() => setShowResetConfirm(false)}>
+                Cancel
+              </button>
+              <button className="btn btnDanger" onClick={confirmResetWorkspace}>
+                Reset data
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <section className="controls">
