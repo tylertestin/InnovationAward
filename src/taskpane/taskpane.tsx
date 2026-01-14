@@ -24,8 +24,14 @@ import {
   isExternalEmail,
 } from "../shared/outlookExport";
 
-function sortStakeholders(state: AppState) {
-  return [...state.stakeholders].sort((a, b) => {
+type StakeholderSort = "recent" | "name";
+
+function sortStakeholders(stakeholders: Stakeholder[], sort: StakeholderSort) {
+  const sorted = [...stakeholders];
+  if (sort === "name") {
+    return sorted.sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }
+  return sorted.sort((a, b) => {
     const at = a.lastInteractionAt ?? a.updatedAt;
     const bt = b.lastInteractionAt ?? b.updatedAt;
     return bt.localeCompare(at);
@@ -63,6 +69,8 @@ function App() {
   const [host] = React.useState<HostApp>(() => detectHost());
   const [state, setState] = React.useState<AppState>(() => loadState());
   const [selectedStakeholderId, setSelectedStakeholderId] = React.useState<string | null>(null);
+  const [search, setSearch] = React.useState("");
+  const [sortBy, setSortBy] = React.useState<StakeholderSort>("recent");
 
   // Outlook (email + calendar) imported from user-exported CSV files.
   const [inbox, setInbox] = React.useState<OutlookEmail[]>([]);
@@ -74,7 +82,17 @@ function App() {
   const [impacts, setImpacts] = React.useState<ImpactRow[]>([]);
   const [pptError, setPptError] = React.useState<string | null>(null);
 
-  const stakeholdersSorted = React.useMemo(() => sortStakeholders(state), [state]);
+  const stakeholdersSorted = React.useMemo(() => {
+    const filtered = state.stakeholders.filter((stakeholder) => {
+      const needle = search.trim().toLowerCase();
+      if (!needle) return true;
+      return (
+        stakeholder.displayName.toLowerCase().includes(needle) ||
+        (stakeholder.email ?? "").toLowerCase().includes(needle)
+      );
+    });
+    return sortStakeholders(filtered, sortBy);
+  }, [state, search, sortBy]);
 
   React.useEffect(() => {
     saveState(state);
@@ -289,17 +307,22 @@ function App() {
 
   const hostLabel =
     host === "Web" ? "Web app" : host === "OneNote" ? "OneNote" : host === "PowerPoint" ? "PowerPoint" : host;
+  const lastInteraction = React.useMemo(() => {
+    if (state.interactions.length === 0) return null;
+    return [...state.interactions].sort((a, b) => b.at.localeCompare(a.at))[0];
+  }, [state.interactions]);
 
   return (
     <div className="container">
       <header className="header">
-        <div>
-          <div className="title">Stakeholder CRM</div>
-          <div className="subtitle">Running in: {hostLabel}</div>
+        <div className="brand">
+          <div className="brandTitle">SignalBridge</div>
+          <div className="brandSubtitle">Stakeholder Intelligence Studio</div>
+          <div className="pill pillNeutral">Running in {hostLabel}</div>
         </div>
         <div className="headerActions">
           <button
-            className="btn"
+            className="btn btnGhost"
             onClick={() => {
               const json = exportState();
               const blob = new Blob([json], { type: "application/json" });
@@ -331,64 +354,105 @@ function App() {
         </div>
       </header>
 
+      <section className="summaryGrid">
+        <div className="summaryCard">
+          <div className="summaryLabel">Active stakeholders</div>
+          <div className="summaryValue">{state.stakeholders.length}</div>
+          <div className="summaryMeta">Sorted by {sortBy === "recent" ? "latest touch" : "name"}</div>
+        </div>
+        <div className="summaryCard">
+          <div className="summaryLabel">Interactions tracked</div>
+          <div className="summaryValue">{state.interactions.length}</div>
+          <div className="summaryMeta">
+            Last update: {lastInteraction ? lastInteraction.at.slice(0, 10) : "—"}
+          </div>
+        </div>
+        <div className="summaryCard">
+          <div className="summaryLabel">Outlook signals</div>
+          <div className="summaryValue">{inbox.length + events.length}</div>
+          <div className="summaryMeta">
+            {inbox.length} emails · {events.length} events
+          </div>
+        </div>
+      </section>
+
       <section className="controls">
-        {host === "OneNote" && (
-          <button className="btnPrimary" onClick={captureFromOneNote}>
-            Capture from OneNote page
-          </button>
-        )}
+        <div className="controlsIntro">
+          <div className="sectionTitle">Command center</div>
+          <p className="muted">
+            Capture stakeholder signals and import data in focused drawers to keep the workspace tidy.
+          </p>
+        </div>
 
-        {host === "PowerPoint" && (
-          <div className="row">
-            <button className="btnPrimary" onClick={captureFromPowerPoint}>
-              Read current slide
-            </button>
-            <button className="btn" onClick={runImpactAnalysisAndRender}>
-              Analyze stakeholder impact
-            </button>
-          </div>
-        )}
+        <div className="drawerStack">
+          <details className="drawer" open>
+            <summary>Capture &amp; import</summary>
+            <div className="drawerBody">
+              {host === "OneNote" && (
+                <button className="btnPrimary" onClick={captureFromOneNote}>
+                  Capture from OneNote page
+                </button>
+              )}
 
-        {(host === "Web" || host === "PowerPoint" || host === "OneNote") && (
-          <div className="row">
-            <label className="btn">
-              Import Inbox CSV
-              <input
-                type="file"
-                accept=".csv,text/csv"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) importOutlookEmailExport(f);
-                  e.currentTarget.value = "";
-                }}
-              />
-            </label>
+              {(host === "Web" || host === "PowerPoint" || host === "OneNote") && (
+                <div className="row">
+                  <label className="btn">
+                    Import Inbox CSV
+                    <input
+                      type="file"
+                      accept=".csv,text/csv"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) importOutlookEmailExport(f);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
 
-            <label className="btn">
-              Import Calendar CSV
-              <input
-                type="file"
-                accept=".csv,text/csv"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) importOutlookCalendarExport(f);
-                  e.currentTarget.value = "";
-                }}
-              />
-            </label>
+                  <label className="btn">
+                    Import Calendar CSV
+                    <input
+                      type="file"
+                      accept=".csv,text/csv"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) importOutlookCalendarExport(f);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
 
-            {(inbox.length > 0 || events.length > 0) && (
-              <span className="muted">
-                {inbox.length} emails, {events.length} events loaded
-              </span>
-            )}
-          </div>
-        )}
+                  {(inbox.length > 0 || events.length > 0) && (
+                    <span className="muted">
+                      {inbox.length} emails, {events.length} events loaded
+                    </span>
+                  )}
+                </div>
+              )}
 
-        {outlookError && <div className="error">Outlook import: {outlookError}</div>}
-        {pptError && <div className="error">PowerPoint error: {pptError}</div>}
+              {outlookError && <div className="error">Outlook import: {outlookError}</div>}
+            </div>
+          </details>
+
+          {host === "PowerPoint" && (
+            <details className="drawer">
+              <summary>PowerPoint insights</summary>
+              <div className="drawerBody">
+                <div className="row">
+                  <button className="btnPrimary" onClick={captureFromPowerPoint}>
+                    Read current slide
+                  </button>
+                  <button className="btn" onClick={runImpactAnalysisAndRender}>
+                    Analyze stakeholder impact
+                  </button>
+                </div>
+                {pptError && <div className="error">PowerPoint error: {pptError}</div>}
+              </div>
+            </details>
+          )}
+        </div>
       </section>
 
       {host === "PowerPoint" && slideText.trim().length > 0 && (
@@ -418,7 +482,24 @@ function App() {
 
       <main className="main">
         <section className="left">
-          <div className="sectionTitle">Stakeholders</div>
+          <div className="sectionHeader">
+            <div>
+              <div className="sectionTitle">Stakeholders</div>
+              <div className="muted">{stakeholdersSorted.length} profiles surfaced</div>
+            </div>
+            <div className="sectionControls">
+              <input
+                className="input inputSlim"
+                placeholder="Search by name or email"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <select className="select" value={sortBy} onChange={(e) => setSortBy(e.target.value as StakeholderSort)}>
+                <option value="recent">Sort: Recent</option>
+                <option value="name">Sort: Name</option>
+              </select>
+            </div>
+          </div>
           <div className="list">
             {stakeholdersSorted.map((s) => (
               <button
@@ -438,7 +519,7 @@ function App() {
         </section>
 
         <section className="right">
-          <div className="sectionTitle">Details</div>
+          <div className="sectionTitle">Engagement workspace</div>
           {selected ? (
             <div className="details">
               <div className="detailsHeader">
@@ -466,7 +547,7 @@ function App() {
       </main>
 
       <section className="panel">
-        <div className="panelTitle">Recent interactions</div>
+        <div className="panelTitle">Engagement timeline</div>
         <div className="interactions">
           {state.interactions.slice(0, 15).map((i) => (
             <div key={i.id} className="interaction">
@@ -483,7 +564,8 @@ function App() {
       </section>
 
       <footer className="footer muted">
-        MVP: Web + OneNote + PowerPoint. Outlook data is ingested via user-exported CSV (Inbox + Calendar). Slide impact uses the local OpenAI-backed API.
+        SignalBridge helps teams monitor stakeholder touchpoints across Web, OneNote, and PowerPoint, with Outlook data
+        ingested from user-exported CSVs. Slide impact uses the local OpenAI-backed API.
       </footer>
     </div>
   );
@@ -492,10 +574,15 @@ function App() {
 function AddNote({ onAdd }: { onAdd: (text: string) => void }) {
   const [text, setText] = React.useState("");
   return (
-    <div className="addNote">
-      <input className="input" placeholder="Add a quick note..." value={text} onChange={(e) => setText(e.target.value)} />
+    <div className="addNote inputGroup">
+      <input
+        className="input"
+        placeholder="Add a quick note..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
       <button
-        className="btn"
+        className="btn btnPrimary"
         onClick={() => {
           const t = text.trim();
           if (!t) return;
