@@ -458,140 +458,146 @@ function App() {
           <div className="brandSubtitle">Stakeholder Intelligence Studio</div>
           <div className="pill pillNeutral">Running in {hostLabel}</div>
         </div>
-        <div className="headerActions">
-          <button
-            className="btn btnGhost"
-            onClick={() => {
-              const json = exportState();
-              const blob = new Blob([json], { type: "application/json" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "caseforce.json";
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Export
-          </button>
-
-          <label className="btn btnSecondary">
-            Import
-            <input
-              type="file"
-              accept="application/json"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleImportJsonFile(f);
-                // reset so selecting the same file twice triggers onChange
-                e.currentTarget.value = "";
+        {host === "Web" && (
+          <div className="headerActions">
+            <button
+              className="btn btnGhost"
+              onClick={() => {
+                const json = exportState();
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "caseforce.json";
+                a.click();
+                URL.revokeObjectURL(url);
               }}
-            />
-          </label>
-        </div>
+            >
+              Export
+            </button>
+
+            <label className="btn btnSecondary">
+              Import
+              <input
+                type="file"
+                accept="application/json"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleImportJsonFile(f);
+                  // reset so selecting the same file twice triggers onChange
+                  e.currentTarget.value = "";
+                }}
+              />
+            </label>
+          </div>
+        )}
       </header>
 
-      <section className="summaryGrid">
-        <div className="summaryCard">
-          <div className="summaryLabel">Active stakeholders</div>
-          <div className="summaryValue">{state.stakeholders.length}</div>
-          <div className="summaryMeta">Sorted by {sortBy === "recent" ? "latest touch" : "name"}</div>
-        </div>
-        <div className="summaryCard">
-          <div className="summaryLabel">Interactions tracked</div>
-          <div className="summaryValue">{state.interactions.length}</div>
-          <div className="summaryMeta">
-            Last update: {lastInteraction ? lastInteraction.at.slice(0, 10) : "—"}
+      {host === "Web" && (
+        <section className="summaryGrid">
+          <div className="summaryCard">
+            <div className="summaryLabel">Active stakeholders</div>
+            <div className="summaryValue">{state.stakeholders.length}</div>
+            <div className="summaryMeta">Sorted by {sortBy === "recent" ? "latest touch" : "name"}</div>
           </div>
-        </div>
-        <div className="summaryCard">
-          <div className="summaryLabel">Outlook signals</div>
-          <div className="summaryValue">{inbox.length + events.length}</div>
-          <div className="summaryMeta">
-            {inbox.length} emails · {events.length} events
-          </div>
-        </div>
-      </section>
-
-      <section className="controls">
-        <div className="controlsIntro">
-          <div className="sectionTitle">Command center</div>
-          <p className="muted">
-            Capture stakeholder signals and import data in focused drawers to keep the workspace tidy.
-          </p>
-        </div>
-
-        <div className="drawerStack">
-          <details className="drawer" open>
-            <summary>Capture &amp; import</summary>
-            <div className="drawerBody">
-              {host === "OneNote" && (
-                <button className="btnPrimary" onClick={captureFromOneNote}>
-                  Capture from OneNote page
-                </button>
-              )}
-
-              {(host === "Web" || host === "PowerPoint" || host === "OneNote") && (
-                <div className="row">
-                  <label className="btn">
-                    Import Inbox CSV
-                    <input
-                      type="file"
-                      accept=".csv,text/csv"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) importOutlookEmailExport(f);
-                        e.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
-
-                  <label className="btn">
-                    Import Calendar CSV
-                    <input
-                      type="file"
-                      accept=".csv,text/csv"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) importOutlookCalendarExport(f);
-                        e.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
-
-                  {(inbox.length > 0 || events.length > 0) && (
-                    <span className="muted">
-                      {inbox.length} emails, {events.length} events loaded
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {outlookError && <div className="error">Outlook import: {outlookError}</div>}
+          <div className="summaryCard">
+            <div className="summaryLabel">Interactions tracked</div>
+            <div className="summaryValue">{state.interactions.length}</div>
+            <div className="summaryMeta">
+              Last update: {lastInteraction ? lastInteraction.at.slice(0, 10) : "—"}
             </div>
-          </details>
+          </div>
+          <div className="summaryCard">
+            <div className="summaryLabel">Outlook signals</div>
+            <div className="summaryValue">{inbox.length + events.length}</div>
+            <div className="summaryMeta">
+              {inbox.length} emails · {events.length} events
+            </div>
+          </div>
+        </section>
+      )}
 
-          {host === "PowerPoint" && (
-            <details className="drawer">
-              <summary>Slide review (PowerPoint)</summary>
+      {host === "Web" && (
+        <section className="controls">
+          <div className="controlsIntro">
+            <div className="sectionTitle">Command center</div>
+            <p className="muted">
+              Capture stakeholder signals and import data in focused drawers to keep the workspace tidy.
+            </p>
+          </div>
+
+          <div className="drawerStack">
+            <details className="drawer" open>
+              <summary>Capture &amp; import</summary>
               <div className="drawerBody">
-                <div className="row">
-                  <button className="btnPrimary" onClick={captureFromPowerPoint}>
-                    Read current slide
+                {host === "OneNote" && (
+                  <button className="btnPrimary" onClick={captureFromOneNote}>
+                    Capture from OneNote page
                   </button>
-                  <button className="btn" onClick={runImpactAnalysisAndRender} disabled={pptReviewLoading}>
-                    {pptReviewLoading ? "Reviewing..." : "Run slide review"}
-                  </button>
-                </div>
-                {pptError && <div className="error">PowerPoint error: {pptError}</div>}
+                )}
+
+                {(host === "Web" || host === "PowerPoint" || host === "OneNote") && (
+                  <div className="row">
+                    <label className="btn">
+                      Import Inbox CSV
+                      <input
+                        type="file"
+                        accept=".csv,text/csv"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) importOutlookEmailExport(f);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+
+                    <label className="btn">
+                      Import Calendar CSV
+                      <input
+                        type="file"
+                        accept=".csv,text/csv"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) importOutlookCalendarExport(f);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+
+                    {(inbox.length > 0 || events.length > 0) && (
+                      <span className="muted">
+                        {inbox.length} emails, {events.length} events loaded
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {outlookError && <div className="error">Outlook import: {outlookError}</div>}
               </div>
             </details>
-          )}
-        </div>
-      </section>
+
+            {host === "PowerPoint" && (
+              <details className="drawer">
+                <summary>Slide review (PowerPoint)</summary>
+                <div className="drawerBody">
+                  <div className="row">
+                    <button className="btnPrimary" onClick={captureFromPowerPoint}>
+                      Read current slide
+                    </button>
+                    <button className="btn" onClick={runImpactAnalysisAndRender} disabled={pptReviewLoading}>
+                      {pptReviewLoading ? "Reviewing..." : "Run slide review"}
+                    </button>
+                  </div>
+                  {pptError && <div className="error">PowerPoint error: {pptError}</div>}
+                </div>
+              </details>
+            )}
+          </div>
+        </section>
+      )}
 
       {host === "PowerPoint" && slideText.trim().length > 0 && (
         <section className="panel">
