@@ -10,7 +10,7 @@
   <Version>0.2.0.0</Version>
   <ProviderName>BCG (Local MVP)</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Stakeholder CRM (PowerPoint MVP)" />
+  <DisplayName DefaultValue="CaseForce" />
   <Description DefaultValue="Highlight impacted stakeholders from the current slide (local MVP)." />
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png" />
@@ -82,7 +82,7 @@
         <bt:Url id="resTaskpaneUrl" DefaultValue="https://localhost:3000/taskpane.html" />
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="resGroupLabel" DefaultValue="Stakeholder CRM" />
+        <bt:String id="resGroupLabel" DefaultValue="CaseForce" />
         <bt:String id="resButtonLabel" DefaultValue="Open CRM" />
       </bt:ShortStrings>
       <bt:LongStrings>

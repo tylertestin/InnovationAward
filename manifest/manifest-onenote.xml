@@ -11,7 +11,7 @@
   <Version>0.1.0.0</Version>
   <ProviderName>BCG (Local MVP)</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Stakeholder CRM (MVP)" />
+  <DisplayName DefaultValue="CaseForce" />
   <Description DefaultValue="Capture stakeholders and interactions from OneNote pages (local MVP)." />
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png" />
@@ -80,11 +80,11 @@
         <bt:Url id="StkCrm.TaskpaneUrl" DefaultValue="https://localhost:3000/taskpane.html" />
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="StkCrm.GroupLabel" DefaultValue="Stakeholder CRM" />
+        <bt:String id="StkCrm.GroupLabel" DefaultValue="CaseForce" />
         <bt:String id="StkCrm.ButtonLabel" DefaultValue="Show Taskpane" />
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="StkCrm.ButtonTooltip" DefaultValue="Open the Stakeholder CRM task pane and capture stakeholder emails from the active OneNote page." />
+        <bt:String id="StkCrm.ButtonTooltip" DefaultValue="Open the CaseForce task pane and capture stakeholder emails from the active OneNote page." />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

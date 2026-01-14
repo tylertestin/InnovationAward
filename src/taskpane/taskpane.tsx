@@ -454,7 +454,7 @@ function App() {
     <div className={`container host-${host.toLowerCase()}`}>
       <header className="header">
         <div className="brand">
-          <div className="brandTitle">SignalBridge</div>
+          <div className="brandTitle">CaseForce</div>
           <div className="brandSubtitle">Stakeholder Intelligence Studio</div>
           <div className="pill pillNeutral">Running in {hostLabel}</div>
         </div>
@@ -467,7 +467,7 @@ function App() {
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = "stakeholder-crm.json";
+              a.download = "caseforce.json";
               a.click();
               URL.revokeObjectURL(url);
             }}
@@ -742,7 +742,7 @@ function App() {
       </section>
 
       <footer className="footer muted">
-        SignalBridge helps teams monitor stakeholder touchpoints across Web, OneNote, and PowerPoint, with Outlook data
+        CaseForce helps teams monitor stakeholder touchpoints across Web, OneNote, and PowerPoint, with Outlook data
         ingested from user-exported CSVs. Slide impact uses the local OpenAI-backed API.
       </footer>
     </div>

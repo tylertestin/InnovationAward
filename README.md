@@ -1,6 +1,6 @@
-# Stakeholder CRM (MVP) — Web + OneNote + PowerPoint
+# CaseForce — Web + OneNote + PowerPoint
 
-This repo is a **consultant-grade stakeholder CRM** focused on day-to-day relationship management:
+This repo is a **consultant-grade stakeholder CRM** focused on day-to-day relationship management, branded as CaseForce:
 - Runs as a **standalone web app** (`https://localhost:3000/taskpane.html`)
 - Runs as an **Office taskpane** in **OneNote (web)** and **PowerPoint (desktop/web)** via sideloaded manifests
 - Imports **email + calendar** data from **Outlook-exported CSV files** (Inbox export + Calendar export).
