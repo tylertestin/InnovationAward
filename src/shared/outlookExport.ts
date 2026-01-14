@@ -59,6 +59,13 @@ function pick(row: Record<string, any>, headers: Record<string, string>, candida
   return undefined;
 }
 
+function toIsoOrUndefined(value: unknown): string | undefined {
+  if (value == null) return undefined;
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString();
+}
+
 async function parseCsvFile(file: File): Promise<Array<Record<string, any>>> {
   const text = await file.text();
   const parsed = Papa.parse<Record<string, any>>(text, {
@@ -100,7 +107,7 @@ export async function importOutlookEmailCsv(file: File): Promise<OutlookEmail[]>
     return {
       id: `email-${idx + 1}`,
       subject: subject ? String(subject) : undefined,
-      receivedDateTime: received ? new Date(String(received)).toISOString() : undefined,
+      receivedDateTime: toIsoOrUndefined(received),
       bodyPreview: body ? String(body).slice(0, 500) : undefined,
       from: (fromEmail || from) ? { name: from ? String(from) : undefined, address: fromEmail ? String(fromEmail) : undefined } : undefined,
       to: splitEmails(to).map((address) => ({ address })),
@@ -130,8 +137,8 @@ export async function importOutlookCalendarCsv(file: File): Promise<OutlookEvent
     const attendees = pick(row, headerMap, ["Required Attendees", "Attendees", "Invitees", "To", "Optional Attendees"]);
     const body = pick(row, headerMap, ["Description", "Body", "Notes"]);
 
-    const startIso = start ? new Date(String(start)).toISOString() : undefined;
-    const endIso = end ? new Date(String(end)).toISOString() : undefined;
+    const startIso = toIsoOrUndefined(start);
+    const endIso = toIsoOrUndefined(end);
 
     return {
       id: `event-${idx + 1}`,
