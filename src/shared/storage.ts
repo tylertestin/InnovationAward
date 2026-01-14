@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { API_BASE_URL } from "./config";
 import { AppState, Interaction, Stakeholder } from "./models";
 
 const STORAGE_KEY = "stakeholderCrm.v1.state";
@@ -6,6 +7,45 @@ let memoryState: AppState | null = null;
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function parseIso(timestamp?: string): number {
+  if (!timestamp) return 0;
+  const parsed = Date.parse(timestamp);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function getStateTimestamp(state: AppState): number {
+  const stakeholderTimes = state.stakeholders.map((s) => Math.max(parseIso(s.updatedAt), parseIso(s.createdAt)));
+  const interactionTimes = state.interactions.map((i) => parseIso(i.at));
+  return Math.max(0, ...stakeholderTimes, ...interactionTimes);
+}
+
+async function pushStateToServer(state: AppState): Promise<void> {
+  try {
+    await fetch(`${API_BASE_URL}/api/state`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state }),
+    });
+  } catch {
+    // ignore sync errors (offline or server unavailable)
+  }
+}
+
+export async function loadStateFromServer(): Promise<AppState | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/state`, { method: "GET" });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { state?: AppState };
+    if (!data?.state) return null;
+    return {
+      stakeholders: data.state.stakeholders ?? [],
+      interactions: data.state.interactions ?? [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function loadState(): AppState {
@@ -33,6 +73,7 @@ export function saveState(state: AppState): void {
   } catch {
     // ignore storage errors (e.g., blocked in Office webviews)
   }
+  void pushStateToServer(state);
 }
 
 export function exportState(): string {
