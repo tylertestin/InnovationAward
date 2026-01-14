@@ -6,8 +6,12 @@ export async function captureFromOneNotePage(): Promise<{
   title: string;
   extractedEmails: string[];
   extractedTextSample: string;
+  error?: string;
 }> {
   try {
+    if (typeof OneNote === "undefined" || typeof OneNote.run !== "function") {
+      throw new Error("OneNote API is not available. Try reloading the add-in while OneNote is open.");
+    }
     const result = await OneNote.run(async (context) => {
       const page = context.application.getActivePageOrNull();
       page.load("id,title");
@@ -69,7 +73,8 @@ export async function captureFromOneNotePage(): Promise<{
       pageId: undefined,
       title: "Error reading OneNote page",
       extractedEmails: [],
-      extractedTextSample: String(e?.message || e),
+      extractedTextSample: "",
+      error: String(e?.message || e),
     };
   }
 }

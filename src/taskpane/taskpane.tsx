@@ -155,6 +155,9 @@ function App() {
     const capture = await captureFromOneNotePage();
     setOneNoteSample(capture.extractedTextSample || "");
     setOneNoteTitle(capture.title || "OneNote page");
+    if (capture.error) {
+      setOneNoteError(capture.error);
+    }
 
     let working = state;
 
@@ -407,14 +410,28 @@ function App() {
     try {
       setOneNoteLoading(true);
       setOneNoteError(null);
-      if (!oneNoteSample.trim()) throw new Error("Capture the OneNote page first to read current notes.");
+      let pageText = oneNoteSample.trim();
+      let pageTitle = oneNoteTitle;
+      if (!pageText) {
+        const capture = await captureFromOneNotePage();
+        if (capture.error) {
+          throw new Error(capture.error);
+        }
+        pageText = (capture.extractedTextSample || "").trim();
+        pageTitle = capture.title || "OneNote page";
+        setOneNoteSample(pageText);
+        setOneNoteTitle(pageTitle);
+      }
+      if (!pageText) {
+        throw new Error("No readable text found on the current OneNote page.");
+      }
       const res = await fetch(`${API_BASE_URL}/api/openai/onenote-synthesis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           stakeholder: selected,
-          pageTitle: oneNoteTitle,
-          pageText: oneNoteSample,
+          pageTitle: pageTitle || "OneNote page",
+          pageText,
         }),
       });
       if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text().catch(() => "")}`);
