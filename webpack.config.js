@@ -63,9 +63,14 @@ module.exports = async (env, argv) => {
         type: "https",
         options: httpsOptions,
       },
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
+      proxy: [
+        {
+          context: ["/api"],
+          target: "http://localhost:3001",
+          secure: false,
+          changeOrigin: true,
+        },
+      ],
       hot: false,
       liveReload: true,
     },
