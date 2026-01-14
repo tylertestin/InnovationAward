@@ -8,8 +8,10 @@ import {
   addInteraction,
   addNote,
   exportState,
+  getStateTimestamp,
   importState,
   loadState,
+  loadStateFromServer,
   saveState,
   upsertStakeholderByEmail,
 } from "../shared/storage";
@@ -68,6 +70,7 @@ async function analyzeStakeholderImpact(params: {
 function App() {
   const [host] = React.useState<HostApp>(() => detectHost());
   const [state, setState] = React.useState<AppState>(() => loadState());
+  const stateRef = React.useRef<AppState>(state);
   const [selectedStakeholderId, setSelectedStakeholderId] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
   const [sortBy, setSortBy] = React.useState<StakeholderSort>("recent");
@@ -110,6 +113,31 @@ function App() {
   React.useEffect(() => {
     saveState(state);
   }, [state]);
+
+  React.useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  React.useEffect(() => {
+    let isActive = true;
+
+    async function syncFromServer() {
+      const remote = await loadStateFromServer();
+      if (!isActive || !remote) return;
+      const localTimestamp = getStateTimestamp(stateRef.current);
+      const remoteTimestamp = getStateTimestamp(remote);
+      if (remoteTimestamp > localTimestamp) {
+        setState(remote);
+      }
+    }
+
+    void syncFromServer();
+    const intervalId = window.setInterval(syncFromServer, 5000);
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   React.useEffect(() => {
     setCommsDraft("");
