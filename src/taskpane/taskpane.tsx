@@ -380,7 +380,14 @@ function App() {
     setCommsError(null);
     setImpacts([]);
     setPptError(null);
+    setPptReviewLoading(false);
     setSlideText("");
+    setOneNoteSample("");
+    setOneNoteTitle("");
+    setOneNoteBullets([]);
+    setOneNoteError(null);
+    setOneNoteLoading(false);
+    setOneNoteStatusUpdates([]);
     setShowResetConfirm(false);
   }
 
