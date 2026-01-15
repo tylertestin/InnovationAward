@@ -43,6 +43,16 @@ function sortStakeholders(stakeholders: Stakeholder[], sort: StakeholderSort) {
 
 type ImpactRow = StakeholderImpact & { rationale?: string };
 
+function nameFromEmail(displayName: string, email?: string) {
+  if (displayName.includes("@")) {
+    return displayName.split("@")[0];
+  }
+  if (email && email.includes("@")) {
+    return email.split("@")[0];
+  }
+  return displayName;
+}
+
 async function readFileAsText(file: File): Promise<string> {
   return await new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -713,7 +723,7 @@ function App() {
                       <span className={r.reaction === "red" ? "pill pillRed" : "pill pillGreen"}>
                         {r.reaction.toUpperCase()}
                       </span>
-                      <span className="impactName">{r.displayName}</span>
+                      <span className="impactName">{nameFromEmail(r.displayName, r.email)}</span>
                       <span className="muted">{r.rationale ?? "Review pending"}</span>
                     </div>
                   ))}
