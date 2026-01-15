@@ -410,7 +410,8 @@ function App() {
     const params = new URLSearchParams();
     params.set("subject", `Follow-up for ${selected.displayName}`);
     params.set("body", commsDraft);
-    return `mailto:${selected.email}?${params.toString()}`;
+    const query = params.toString().replace(/\+/g, "%20");
+    return `mailto:${selected.email}?${query}`;
   }, [commsDraft, selected]);
 
   async function generateCommsDraft() {
