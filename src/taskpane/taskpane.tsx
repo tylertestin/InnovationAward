@@ -395,7 +395,6 @@ function App() {
     setOneNoteBullets([]);
     setOneNoteError(null);
     setOneNoteLoading(false);
-    setOneNoteStatusUpdates([]);
     setShowResetConfirm(false);
   }
 
