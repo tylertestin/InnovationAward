@@ -99,6 +99,7 @@ function App() {
   const [oneNoteBullets, setOneNoteBullets] = React.useState<string[]>([]);
   const [oneNoteError, setOneNoteError] = React.useState<string | null>(null);
   const [oneNoteLoading, setOneNoteLoading] = React.useState(false);
+  const [oneNoteStatusUpdates, setOneNoteStatusUpdates] = React.useState<string[]>([]);
 
   const stakeholdersSorted = React.useMemo(() => {
     const filtered = state.stakeholders.filter((stakeholder) => {
@@ -146,6 +147,7 @@ function App() {
     setCommsError(null);
     setOneNoteBullets([]);
     setOneNoteError(null);
+    setOneNoteStatusUpdates([]);
   }, [selectedStakeholderId]);
 
   const selected = React.useMemo(
@@ -398,9 +400,10 @@ function App() {
   }, [state.interactions, selected]);
   const commsMailto = React.useMemo(() => {
     if (!selected?.email || !commsDraft) return null;
-    const subject = encodeURIComponent(`Follow-up for ${selected.displayName}`);
-    const body = encodeURIComponent(commsDraft);
-    return `mailto:${selected.email}?subject=${subject}&body=${body}`;
+    const params = new URLSearchParams();
+    params.set("subject", `Follow-up for ${selected.displayName}`);
+    params.set("body", commsDraft);
+    return `mailto:${selected.email}?${params.toString()}`;
   }, [commsDraft, selected]);
 
   async function generateCommsDraft() {
@@ -437,9 +440,11 @@ function App() {
     try {
       setOneNoteLoading(true);
       setOneNoteError(null);
+      setOneNoteStatusUpdates(["Preparing OneNote synthesis..."]);
       let pageText = oneNoteSample.trim();
       let pageTitle = oneNoteTitle;
       if (!pageText) {
+        setOneNoteStatusUpdates((prev) => [...prev, "Extracting text from the current OneNote page..."]);
         const capture = await captureFromOneNotePage();
         if (capture.error) {
           throw new Error(capture.error);
@@ -452,6 +457,7 @@ function App() {
       if (!pageText) {
         throw new Error("No readable text found on the current OneNote page.");
       }
+      setOneNoteStatusUpdates((prev) => [...prev, "Sending page text to OpenAI for synthesis..."]);
       const res = await fetch(`${API_BASE_URL}/api/openai/onenote-synthesis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -461,7 +467,11 @@ function App() {
           pageText,
         }),
       });
-      if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text().catch(() => "")}`);
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "");
+        throw new Error(`API error ${res.status}: ${errorText}`);
+      }
+      setOneNoteStatusUpdates((prev) => [...prev, "Processing response from OpenAI..."]);
       const data = (await res.json()) as { bullets?: string[] };
       const bullets = Array.isArray(data.bullets) ? data.bullets : [];
       setOneNoteBullets(bullets);
@@ -469,9 +479,14 @@ function App() {
         const formatted = bullets.map((b) => `• ${b}`).join("\n");
         const noteText = `${pageTitle || "OneNote page"}\n${formatted}`;
         setState((prev) => addNote(prev, selected.id, noteText));
+        setOneNoteStatusUpdates((prev) => [...prev, "Saved synthesized bullets to stakeholder notes."]);
+      } else {
+        setOneNoteStatusUpdates((prev) => [...prev, "No bullets were returned for this page."]);
       }
+      setOneNoteStatusUpdates((prev) => [...prev, "OneNote synthesis complete."]);
     } catch (e: any) {
       setOneNoteError(String(e?.message || e));
+      setOneNoteStatusUpdates((prev) => [...prev, "OneNote synthesis failed."]);
     } finally {
       setOneNoteLoading(false);
     }
@@ -762,6 +777,13 @@ function App() {
                   <button className="btnPrimary" onClick={synthesizeOneNoteBullets} disabled={oneNoteLoading}>
                     {oneNoteLoading ? "Synthesizing..." : "Synthesize bullets"}
                   </button>
+                  {oneNoteStatusUpdates.length > 0 && (
+                    <ul className="bullets">
+                      {oneNoteStatusUpdates.map((status, idx) => (
+                        <li key={`${status}-${idx}`}>{status}</li>
+                      ))}
+                    </ul>
+                  )}
                   {oneNoteError && <div className="error">OneNote: {oneNoteError}</div>}
                   {oneNoteBullets.length > 0 && (
                     <ul className="bullets">
