@@ -396,6 +396,12 @@ function App() {
       .slice(0, 6)
       .map((i) => ({ title: i.title, summary: i.summary, at: i.at, type: i.type }));
   }, [state.interactions, selected]);
+  const commsMailto = React.useMemo(() => {
+    if (!selected?.email || !commsDraft) return null;
+    const subject = encodeURIComponent(`Follow-up for ${selected.displayName}`);
+    const body = encodeURIComponent(commsDraft);
+    return `mailto:${selected.email}?subject=${subject}&body=${body}`;
+  }, [commsDraft, selected]);
 
   async function generateCommsDraft() {
     if (!selected) return;
@@ -730,7 +736,20 @@ function App() {
                     {commsLoading ? "Generating..." : "Generate comms"}
                   </button>
                   {commsError && <div className="error">Comms: {commsError}</div>}
-                  {commsDraft && <div className="monoBox monoBoxTight">{commsDraft}</div>}
+                  {commsDraft && (
+                    <>
+                      <div className="monoBox monoBoxTight">{commsDraft}</div>
+                      <div className="commsActions">
+                        {commsMailto ? (
+                          <a className="btn btnSecondary" href={commsMailto}>
+                            Open in email
+                          </a>
+                        ) : (
+                          <div className="muted">Add an email address to open this as a draft.</div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

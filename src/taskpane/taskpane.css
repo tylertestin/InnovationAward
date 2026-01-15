@@ -468,6 +468,14 @@ button:disabled {
   max-height: 200px;
 }
 
+.commsActions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .impactList {
   display: flex;
   flex-direction: column;
