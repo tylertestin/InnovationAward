@@ -19,8 +19,8 @@ const openai = new OpenAI({ apiKey: openaiKey });
 // Note: Outlook ingestion is handled via static user exports (CSV) in the client.
 // We intentionally do not connect to Microsoft Graph here, to avoid tenant app-registration requirements.
 
-type StoredState = { stakeholders: any[]; interactions: any[] };
-let storedState: StoredState = { stakeholders: [], interactions: [] };
+type StoredState = { stakeholders: any[]; interactions: any[]; updatedAt?: string };
+let storedState: StoredState = { stakeholders: [], interactions: [], updatedAt: undefined };
 
 app.get("/api/state", (_req, res) => {
   res.json({ state: storedState });
@@ -31,7 +31,7 @@ app.put("/api/state", (req, res) => {
   if (!state || !Array.isArray(state.stakeholders) || !Array.isArray(state.interactions)) {
     return res.status(400).json({ error: "state must include stakeholders and interactions arrays" });
   }
-  storedState = { stakeholders: state.stakeholders, interactions: state.interactions };
+  storedState = { stakeholders: state.stakeholders, interactions: state.interactions, updatedAt: state.updatedAt };
   return res.json({ ok: true });
 });
 
