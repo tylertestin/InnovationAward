@@ -593,13 +593,6 @@ function App() {
       )}
 
       <section className="controls">
-        <div className="controlsIntro">
-          <div className="sectionTitle">Command center</div>
-          <p className="muted">
-            Capture stakeholder signals and import data in focused drawers to keep the workspace tidy.
-          </p>
-        </div>
-
         <div className="drawerStack">
           <details className="drawer" open>
             <summary>Capture &amp; import</summary>
