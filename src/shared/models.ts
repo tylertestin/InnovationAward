@@ -37,4 +37,5 @@ export interface Interaction {
 export interface AppState {
   stakeholders: Stakeholder[];
   interactions: Interaction[];
+  updatedAt?: string;
 }

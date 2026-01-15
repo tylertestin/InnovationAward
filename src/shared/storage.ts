@@ -16,9 +16,10 @@ function parseIso(timestamp?: string): number {
 }
 
 export function getStateTimestamp(state: AppState): number {
+  const stateUpdatedAt = parseIso(state.updatedAt);
   const stakeholderTimes = state.stakeholders.map((s) => Math.max(parseIso(s.updatedAt), parseIso(s.createdAt)));
   const interactionTimes = state.interactions.map((i) => parseIso(i.at));
-  return Math.max(0, ...stakeholderTimes, ...interactionTimes);
+  return Math.max(0, stateUpdatedAt, ...stakeholderTimes, ...interactionTimes);
 }
 
 async function pushStateToServer(state: AppState): Promise<void> {
@@ -42,6 +43,7 @@ export async function loadStateFromServer(): Promise<AppState | null> {
     return {
       stakeholders: data.state.stakeholders ?? [],
       interactions: data.state.interactions ?? [],
+      updatedAt: data.state.updatedAt,
     };
   } catch {
     return null;
@@ -56,6 +58,7 @@ export function loadState(): AppState {
       const normalized = {
         stakeholders: parsed.stakeholders ?? [],
         interactions: parsed.interactions ?? [],
+        updatedAt: parsed.updatedAt,
       };
       memoryState = normalized;
       return normalized;
@@ -66,14 +69,16 @@ export function loadState(): AppState {
   return memoryState ?? { stakeholders: [], interactions: [] };
 }
 
-export function saveState(state: AppState): void {
-  memoryState = state;
+export function saveState(state: AppState): AppState {
+  const stamped = { ...state, updatedAt: nowIso() };
+  memoryState = stamped;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stamped));
   } catch {
     // ignore storage errors (e.g., blocked in Office webviews)
   }
-  void pushStateToServer(state);
+  void pushStateToServer(stamped);
+  return stamped;
 }
 
 export function exportState(): string {
@@ -85,15 +90,14 @@ export function importState(jsonText: string): AppState {
   const normalized: AppState = {
     stakeholders: parsed.stakeholders ?? [],
     interactions: parsed.interactions ?? [],
+    updatedAt: parsed.updatedAt,
   };
-  saveState(normalized);
-  return normalized;
+  return saveState(normalized);
 }
 
 export function resetState(): AppState {
-  const cleared: AppState = { stakeholders: [], interactions: [] };
-  saveState(cleared);
-  return cleared;
+  const cleared: AppState = { stakeholders: [], interactions: [], updatedAt: nowIso() };
+  return saveState(cleared);
 }
 
 export function upsertStakeholderByEmail(
@@ -163,8 +167,7 @@ export function addNote(state: AppState, stakeholderId: string, noteText: string
   });
 
   const newState = { ...state, stakeholders };
-  saveState(newState);
-  return newState;
+  return saveState(newState);
 }
 
 export function addInteraction(state: AppState, interaction: Omit<Interaction, "id">): AppState {
@@ -178,10 +181,10 @@ export function addInteraction(state: AppState, interaction: Omit<Interaction, "
   });
 
   const newState: AppState = {
+    ...state,
     stakeholders,
     interactions: [full, ...state.interactions],
   };
 
-  saveState(newState);
-  return newState;
+  return saveState(newState);
 }
